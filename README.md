@@ -29,7 +29,7 @@ python setup.py install
 1. **examples**
     
    A number of examples for demonstrating the usage of this package. 
-   The focus is on the usage of invertible_rim.irim.
+   The focus is on the usage of irim.core.
     
 2. **irim.core**
 

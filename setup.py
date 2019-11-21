@@ -3,7 +3,7 @@ from setuptools import setup
 setup(
     name='irim',
     version='0.1.0',
-    packages=['irim', 'irim.rim', 'irim.core', 'irim.test', 'irim.utils', 'examples'],
+    packages=['irim', 'irim.rim', 'irim.core', 'irim.test', 'irim.utils'],
     url='https://github.com/pputzky/invertible_rim',
     license='MIT',
     author='Patrick Putzky',
