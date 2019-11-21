@@ -26,22 +26,22 @@ python setup.py install
 ```
 
 ### Package structure
-1. **invertible_rim.examples**
+1. **examples**
     
    A number of examples for demonstrating the usage of this package. 
    The focus is on the usage of invertible_rim.irim.
     
-2. **invertible_rim.irim**
+2. **irim.core**
 
    This is the core of the package. It implements all components necessary to 
    build an i-RIM and to train it using *invert to learn*. This module can easily 
    be extended with other invertible layers and modules.
    
-3. **invertible_rim.rim**
+3. **irim.rim**
    
    A reference implementation of the [Recurrent Inference Machines (RIM)](https://arxiv.org/pdf/1706.04008)
 
-4. **invertible_rim.test**
+4. **irim.test**
    A number of tests for module invertible_rim.irim. You can run
    ```bash
    pytest

@@ -1,9 +1,9 @@
 import torch
 from torch import nn
 
-from irim.invert_to_learn import InvertibleLayer
-from utils.torch_utils import determine_conv_functional
-from irim.residual_blocks import ResidualBlockPixelshuffle
+from irim.core.invert_to_learn import InvertibleLayer
+from irim.utils.torch_utils import determine_conv_functional
+from irim.core.residual_blocks import ResidualBlockPixelshuffle
 
 
 class RevNetLayer(InvertibleLayer):

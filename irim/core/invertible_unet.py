@@ -1,7 +1,7 @@
 import torch.nn as nn
 
-from irim.invertible_layers import RevNetLayer, Housholder1x1
-from irim.invert_to_learn import InvertibleModule
+from irim.core.invertible_layers import RevNetLayer, Housholder1x1
+from irim.core.invert_to_learn import InvertibleModule
 
 
 class InvertibleUnet(InvertibleModule):

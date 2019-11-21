@@ -1,6 +1,6 @@
 from torch import nn
 
-from utils.torch_utils import determine_conv_class
+from irim.utils.torch_utils import determine_conv_class
 
 
 class ResidualBlockPixelshuffle(nn.Module):

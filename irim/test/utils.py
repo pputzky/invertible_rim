@@ -1,5 +1,5 @@
 import torch
-from irim.invert_to_learn import InvertibleModule, MemoryFreeInvertibleModule
+from irim.core.invert_to_learn import InvertibleModule, MemoryFreeInvertibleModule
 
 
 def forward_reverse(model, x, *args, **kwargs):

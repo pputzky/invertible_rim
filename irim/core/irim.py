@@ -1,5 +1,5 @@
 import torch
-from irim.invert_to_learn import InvertibleLayer, InvertibleModule
+from irim.core.invert_to_learn import InvertibleLayer, InvertibleModule
 
 
 class IRIM(InvertibleModule):
