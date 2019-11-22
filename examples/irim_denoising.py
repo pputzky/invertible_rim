@@ -7,9 +7,9 @@ CUDA devices if available.
 """
 import torch
 
-from irim.core.irim import IRIM
-from irim.core.invertible_unet import InvertibleUnet
-from irim.core.invert_to_learn import MemoryFreeInvertibleModule
+from irim import IRIM
+from irim import InvertibleUnet
+from irim import MemoryFreeInvertibleModule
 
 # Use CUDA if available
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")

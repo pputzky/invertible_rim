@@ -1,7 +1,7 @@
 import torch
 from torch.testing import assert_allclose
 
-from irim.core.invertible_layers import Housholder1x1, RevNetLayer
+from irim import Housholder1x1, RevNetLayer
 from irim.test.utils import create_model_and_i2l_copy, forward_reverse, model_gradients
 
 if torch.cuda.is_available():

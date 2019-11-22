@@ -6,7 +6,7 @@ All Invertible Layers  should inherit from InvertibleLayer
 """
 import torch
 
-from irim.core.invert_to_learn import InvertibleModule, InvertibleLayer, MemoryFreeInvertibleModule
+from irim import InvertibleModule, InvertibleLayer, MemoryFreeInvertibleModule
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 

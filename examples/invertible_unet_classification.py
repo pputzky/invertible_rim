@@ -7,8 +7,8 @@ Here, the data set consists of white noise images that are random labeled.
 
 import torch
 
-from irim.core.invertible_unet import InvertibleUnet
-from irim.core.invert_to_learn import MemoryFreeInvertibleModule
+from irim import InvertibleUnet
+from irim import MemoryFreeInvertibleModule
 
 # Use CUDA if devices are available
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
