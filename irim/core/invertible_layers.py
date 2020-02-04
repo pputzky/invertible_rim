@@ -32,7 +32,7 @@ class RevNetLayer(InvertibleLayer):
 
         return x
 
-    def gradfun(self, forward_fun, reverse_fun, x=None, y=None, grad_outputs=None, parameters=None, *args, **kwargs):
+    def gradfun(self, forward_fun, reverse_fun, x=None, y=None, grad_outputs=None, parameters=None):
         with torch.enable_grad():
             if x is None and y is not None:
                 y = y.detach().requires_grad_(True)
@@ -62,7 +62,7 @@ class Housholder1x1(InvertibleLayer):
 
     def _forward(self, x, W=None):
         if W is None:
-            W = self._get_weights()
+            W = self._get_weight()
 
         for i in range(self.conv_nd):
             W = W.unsqueeze(-1)
@@ -70,37 +70,33 @@ class Housholder1x1(InvertibleLayer):
 
     def _reverse(self, y, W=None):
         if W is None:
-            W = self._get_weights()
-
+            W = self._get_weight()
         W = W.t()
         for i in range(self.conv_nd):
             W = W.unsqueeze(-1)
         return self.conv(y, W)
 
-    def _get_weights(self):
+    def _get_weight(self):
         V = self.weights
         V_t = self.weights.transpose(1, 2)
         U = self.I - 2 * torch.bmm(V, V_t) / torch.bmm(V_t, V)
         W = torch.chain_matmul(*U)
-
         return W
 
-    def gradfun(self, forward_fun, reverse_fun, x=None, y=None, grad_outputs=None, parameters=None, *args, **kwargs):
+    def gradfun(self, forward_fun, reverse_fun, x=None, y=None, grad_outputs=None, parameters=None):
         with torch.enable_grad():
-            W = self._get_weights()
+            W = self._get_weight()
             if x is None and y is not None:
-                with torch.no_grad():
-                    y = y.detach()
-                    x = reverse_fun(y,W.detach())
+                x = reverse_fun(y.detach(), W)
+                grad_input = reverse_fun(grad_outputs.detach(),W)
+                param_grads = torch.autograd.grad(grad_input, parameters, grad_outputs=x.detach())
 
-            x = x.detach().requires_grad_(True)
-            y = forward_fun(x, W)
-            grads = torch.autograd.grad(y, [x] + parameters, grad_outputs=grad_outputs)
+            else:
+                x = x.detach().requires_grad_(True)
+                y = forward_fun(x, W)
+                grads = torch.autograd.grad(y, [x] + parameters, grad_outputs=grad_outputs)
 
-            grad_input = grads[0]
-            param_grads = grads[1:]
-
+                grad_input = grads[0]
+                param_grads = grads[1:]
         return x, grad_input, param_grads
-
-
 

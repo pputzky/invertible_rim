@@ -8,25 +8,24 @@ from torch.autograd import Function
 
 class InvertToLearnFunction(Function):
     @staticmethod
-    def forward(ctx, n_args, layer, mode, args, kwargs, *tensors):
+    def forward(ctx, n_args, layer, forward_fun, reverse_fun, args, kwargs, *tensors):
+
         if n_args == 1:
             x = tensors[0]
         else:
             x = list(tensors[:2 * n_args:2])
 
         with torch.no_grad():
-            if mode == 'forward':
-                y = layer._forward(x, *args, **kwargs)
-            elif mode == 'reverse':
-                y = layer._reverse(x, *args, **kwargs)
+            y = forward_fun(x, *args, **kwargs)
 
         if any([x_.requires_grad for x_ in tensors]):
             ctx.n_args = n_args
             ctx.layer = layer
-            ctx.mode = mode
-            ctx.parameters = list(tensors[2 * n_args:])
+            ctx.forward_fun = forward_fun
+            ctx.reverse_fun = reverse_fun
             ctx.args = args
             ctx.kwargs = kwargs
+            ctx.tensors = list(tensors[2 * n_args:])
             if layer.save_input:
                 if n_args == 1:
                     ctx.save_for_backward(x)
@@ -44,43 +43,28 @@ class InvertToLearnFunction(Function):
     @staticmethod
     def backward(ctx, *out):
         if len(out) == 2:
-            y, grad_outputs = out[1], out[0]
+            y, grad_outputs = out[1].detach(), out[0]
         else:
             y, grad_outputs = list(out[1::2]), list(out[::2])
-
-        parameters = ctx.parameters
+            y = [y_.detach() for y_ in y]
 
         x = None
         if len(ctx.saved_tensors) > 0:
-            x = list(ctx.saved_tensors)
             if ctx.n_args == 1:
-                x = x[0]
+                x = ctx.saved_tensors[0]
+            else:
+                x = list(ctx.saved_tensors)
 
-        if ctx.mode == 'forward':
-            forward_fun = ctx.layer._forward
-            reverse_fun = ctx.layer._reverse
-        elif ctx.mode == 'reverse':
-            forward_fun = ctx.layer._reverse
-            reverse_fun = ctx.layer._forward
-
-        x, grad_inputs, param_grads = ctx.layer.gradfun(forward_fun, reverse_fun,
-                                                        x, y, grad_outputs, parameters,
-                                                        *ctx.args, **ctx.kwargs)
+        x, grad_inputs, param_grads = ctx.layer.gradfun(ctx.forward_fun, ctx.reverse_fun,
+                                                        x, y, grad_outputs, ctx.tensors, *ctx.args, **ctx.kwargs)
         if ctx.n_args == 1:
-            input_gradients = (grad_inputs, x)
+            input_gradients = (grad_inputs, x.detach())
         else:
+            x = [x_.detach() for x_ in x]
             input_gradients = tuple(itertools.chain(*zip(grad_inputs, x)))
         parameter_gradients = tuple(param_grads)
 
-        # References need to be cleared to prevent memory leaks
-        ctx.n_args = None
-        ctx.layer = None
-        ctx.mode = None
-        ctx.parameters = None
-        ctx.args = None
-        ctx.kwargs = None
-
-        return (None, None, None, None, None) + input_gradients + parameter_gradients
+        return (None, None, None, None, None, None) + input_gradients + parameter_gradients
 
 
 class InvertibleModule(nn.Module, ABC):
@@ -124,8 +108,16 @@ class InvertibleLayer(InvertibleModule, ABC):
                 n_args = 1
                 x = list(x)
             tensors = x + list(self.parameters())
-            y = InvertToLearnFunction.apply(n_args, self, 'forward',
-                                            args, kwargs, *tensors)
+            for arg in args:
+                if torch.is_tensor(arg) and arg.requires_grad:
+                    tensors.append(arg)
+            for arg in kwargs.values():
+                if torch.is_tensor(arg) and arg.requires_grad:
+                    tensors.append(arg)
+            forward_fun = self._forward
+            reverse_fun = self._reverse
+
+            y = InvertToLearnFunction.apply(n_args, self, forward_fun, reverse_fun, args, kwargs, *tensors)
             if len(y) > 2:
                 y = list(zip(y[::2], y[1::2]))
         else:
@@ -150,8 +142,16 @@ class InvertibleLayer(InvertibleModule, ABC):
                 y = list(y)
 
             tensors = list(y) + list(self.parameters())
-            x = InvertToLearnFunction.apply(n_args, self, 'reverse',
-                                            args, kwargs, *tensors)
+            for arg in args:
+                if torch.is_tensor(arg) and arg.requires_grad:
+                    tensors.append(arg)
+            for arg in kwargs.values():
+                if torch.is_tensor(arg) and arg.requires_grad:
+                    tensors.append(arg)
+
+            reverse_fun = self._forward
+            forward_fun = self._reverse
+            x = InvertToLearnFunction.apply(n_args, self, forward_fun, reverse_fun, args, kwargs, *tensors)
             if len(x) > 2:
                 x = list(zip(x[::2], x[1::2]))
         else:
@@ -212,6 +212,10 @@ class IdentityLayer(InvertibleLayer):
     def _reverse(self, y, *args, **kwargs):
         return y
 
+    def gradfun(self, forward_fun, reverse_fun, x=None, y=None, grad_outputs=None, parameters=None, *args, **kwargs):
+        if x is None:
+            x = y
+        return x, grad_outputs,[]
 
 def make_layer_memory_free(layer, save_input=False):
     if isinstance(layer, InvertibleLayer):
@@ -261,3 +265,4 @@ class MemoryFreeInvertibleModule(InvertibleModule):
             y = y[0]
 
         return y
+
