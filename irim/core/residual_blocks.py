@@ -26,10 +26,11 @@ class ResidualBlockPixelshuffle(nn.Module):
         x_size = list(x.size())
         x_size[1] = self.n_output
 
-        x = nn.functional.relu(self.l1(x))
-        x = nn.functional.relu(self.l2(x))
+        x = nn.functional.relu_(self.l1(x))
+        x = nn.functional.relu_(self.l2(x))
         x = self.l3(x, output_size=tuple(x_size))
         if self.use_glu:
             x = nn.functional.glu(x, 1)
 
         return x
+
