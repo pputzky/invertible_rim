@@ -64,3 +64,19 @@ def test_irim():
 
     for g_est,g in zip(gradients_reverse_i2l,gradients_reverse):
         assert_allclose(g_est,g)
+
+    with torch.enable_grad():
+        z.detach_().requires_grad_(True)
+        y_est = model.forward(x, z)
+        loss = torch.nn.functional.mse_loss(y_est,y)
+        grad_z = torch.autograd.grad(loss, z)[0]
+
+    with torch.enable_grad():
+        z.detach_().requires_grad_(True)
+        x.detach_().requires_grad_(True)
+
+        y_est = model_i2l.forward(x, z)
+        loss = torch.nn.functional.mse_loss(y_est,y)
+        grad_z_i2l = torch.autograd.grad(loss, z)[0]
+
+    assert_allclose(grad_z, grad_z_i2l)
