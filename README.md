@@ -9,9 +9,8 @@ a wrapper class that enables *invert to learn* on such invertible models, and
 a reference implementation for the i-RIM. A number of examples demonstrate how to 
 use the package.
 
-This work was used for the [fastMRI challenge](https://fastmri.org). 
-Training and evaluation code for the fastMRI problem will shortly be available 
-in another repository. 
+This work was used for the model that won the singlcoil track in the [fastMRI challenge](https://fastmri.org). 
+Training and evaluation code for the fastMRI problem can befound [here](https://github.com/pputzky/irim_fastMRI).
 
 ## Installation
 
