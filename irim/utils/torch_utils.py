@@ -3,17 +3,17 @@ from torch.nn import Module
 
 
 def determine_conv_class(n_dim, transposed=False):
-    if n_dim is 1:
+    if n_dim == 1:
         if not transposed:
             return nn.Conv1d
         else:
             return nn.ConvTranspose1d
-    elif n_dim is 2:
+    elif n_dim == 2:
         if not transposed:
             return nn.Conv2d
         else:
             return nn.ConvTranspose2d
-    elif n_dim is 3:
+    elif n_dim == 3:
         if not transposed:
             return nn.Conv3d
         else:
@@ -23,17 +23,17 @@ def determine_conv_class(n_dim, transposed=False):
 
 
 def determine_conv_functional(n_dim, transposed=False):
-    if n_dim is 1:
+    if n_dim == 1:
         if not transposed:
             return nn.functional.conv1d
         else:
             return nn.functional.conv_transposed1d
-    elif n_dim is 2:
+    elif n_dim == 2:
         if not transposed:
             return nn.functional.conv2d
         else:
             return nn.functional.conv_transposed2d
-    elif n_dim is 3:
+    elif n_dim == 3:
         if not transposed:
             return nn.functional.conv3d
         else:
